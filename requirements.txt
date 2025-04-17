@@ -1,0 +1,9 @@
+click
+jupyterlab
+langchain
+langchain-ollama
+langchain-chroma
+langfuse
+pandas
+pysqlite3-binary
+python-dotenv
