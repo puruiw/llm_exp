@@ -2,4 +2,6 @@
 .ipynb_checkpoints/
 __pycache__/
 chroma_db/
+data/
 venv/
+exp_plan.txt
