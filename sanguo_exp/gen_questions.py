@@ -39,6 +39,8 @@ def generate(model: str, num: int) -> None:
     ]
     random.shuffle(docs)
 
+    # 默认的Question Generation Chain 使用英文提示词，会造成的问答是英文的。
+    # 我们从新用中文实现这个chain。
     template = PromptTemplate.from_template("""\
 你是一位历史老师，下面是《三国演义》的内容，请根据内容生成1个问题，请用中文回答。
 例子:

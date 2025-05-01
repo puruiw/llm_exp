@@ -21,7 +21,8 @@ def run() -> None:
         host="https://us.cloud.langfuse.com", # 🇺🇸 US region
     )
 
-    retriever = chroma_lib.get_retriever()
+    embedding_model = chroma_lib.default_embedding_model()
+    retriever = chroma_lib.get_sci_fi_retriever(embedding_model)
     docs = retriever.invoke("一本讲述太空贸易的小说")
     for doc in docs:
         print(doc.metadata["source"])
