@@ -1,5 +1,6 @@
 import json
 import random
+import os
 
 import click
 
@@ -14,22 +15,26 @@ _QA_OUTPUT_PARSER = RegexParser(
     regex=r"QUESTION: (.*?)\n+ANSWER: (.*)", output_keys=["query", "answer"]
 )
 
+
 @click.command()
 @click.option("--model", default="qwen2.5:7b", help="Model name")
 @click.option("--num", default=10, help="Number of questions to generate")
-def generate(model: str, num: int) -> None:
+@click.option(
+    "--output_file",
+    default="output/sanguo_auto_questions.json",
+    help="Output file path",
+)
+def generate(model: str, num: int, output_file: str) -> None:
     """
     Generate questions using the specified model.
     """
     llm_model = OllamaLLM(model=model)
-    
+
     with open("data/sanguo.txt", "r") as f:
         content = f.read()
 
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-        separators=["\n\n", "\n", " ", "。", ""]
+        chunk_size=1000, chunk_overlap=200, separators=["\n\n", "\n", " ", "。", ""]
     )
     texts = text_splitter.split_text(content)
 
@@ -41,7 +46,8 @@ def generate(model: str, num: int) -> None:
 
     # 默认的Question Generation Chain 使用英文提示词，会造成的问答是英文的。
     # 我们从新用中文实现这个chain。
-    template = PromptTemplate.from_template("""\
+    template = PromptTemplate.from_template(
+        """\
 你是一位历史老师，下面是《三国演义》的内容，请根据内容生成1个问题，请用中文回答。
 例子:
 <Begin Document>
@@ -57,7 +63,8 @@ ANSWER: 答案内容
 <Begin Document>
 {doc}
 <End Document>                                 
-""")
+"""
+    )
     gen_qa_chain = template | llm_model
 
     questions = []
@@ -68,19 +75,17 @@ ANSWER: 答案内容
         result = gen_qa_chain.invoke({"doc": doc.page_content})
         try:
             parsed = _QA_OUTPUT_PARSER.parse(result)
+            parsed["content"] = doc.page_content
+            parsed["metadata"] = doc.metadata
             questions.append(parsed)
         except ValueError:
             print(f"Failed to parse result: {result}")
             continue
 
-    with open("data/sanguo_auto_questions.json", "w") as f:
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    with open(output_file, "w") as f:
         json.dump(questions, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
     generate()
-
-    
-
-
-    

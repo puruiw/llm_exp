@@ -15,7 +15,7 @@ def load_questions():
 
 
 def _load_auto_questions():
-    with open("data/sanguo_auto_questions.json", "r") as f:
+    with open("output/sanguo_auto_questions.json", "r") as f:
         auto_questions = json.load(f)
 
     for question in auto_questions:
